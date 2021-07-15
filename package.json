@@ -1,0 +1,21 @@
+{
+  "name": "websocket-x",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "audit": "^0.0.6",
+    "express": "^4.17.1",
+    "fix": "^0.0.3",
+    "http": "^0.0.1-security",
+    "npm": "^7.20.0",
+    "require": "^0.4.4",
+    "websocket": "^1.0.34"
+  }
+}

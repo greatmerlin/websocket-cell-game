@@ -45,7 +45,7 @@ wsServer.on("request", (request) => {
   // the payLoad of the connect
   const payLoad = {
     method: "connect",
-    cliendId: clientId,
+    clientId: clientId,
   };
   connection.send(JSON.stringify(payLoad));
 });

@@ -8,12 +8,30 @@
 </head>
 <body>
     <h1>Hello, merlin</h1>
+    <button id="btnCreate">New Game</button>
     <script>
+
+        // button --------
+
+        const btnCreate = document.getElementById("btnCreate");
+
+        // button --------
+
+        let clientId = null;
+        // client makes a request to the websocket 9090 (hhtp server)
+        //note: our hhtpserver is hosted inside our express site with port 9091
         let ws = new WebSocket("ws://localhost:9090");
-        ws.onmessage((message) => {
+        ws.onmessage = (message) => {
+            // response from the server
             const response = JSON.parse(message.data);
             console.log(response);
-        });
+            // connect method
+            if(response.method === "connect"){
+                clientId = response.clientId;
+                console.log("client ID -> ", clientId);
+
+            }
+        };
     </script>
 </body>
 </html>

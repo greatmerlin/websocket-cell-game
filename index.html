@@ -9,21 +9,27 @@
   <body>
     <h1>Hello, merlin</h1>
     <button id="btnCreate">New Game</button>
+    <button id="btnJoin">Join Game</button>
+    <input type='text' id="txtGameId">
     <script>
       let clientId = null;
+      let gameId = null;
       // client makes a request to the websocket 9090 (hhtp server)
       //note: our hhtpserver is hosted inside our express site with port 9091
       let ws = new WebSocket("ws://localhost:9090");
 
       // button --------
       const btnCreate = document.getElementById("btnCreate");
-      // wiring the events
+      const btnJoin = document.getElementById("btnJoin");
+      const txtGameId = document.getElementById("txtGameId");
+
+      // wiring the events ----------------------------------------
       // if sm1 clicks on me, what do I do -> send a request
       btnCreate.addEventListener("click", (e) => {
         // we need a payload and then send it to the server
         const payload = {
-          method: "create",
-          clientId: clientId,
+          "method": "create",
+          "clientId": clientId,
         };
         console.log(
           "***Client presses button & sends payload: ---> ",
@@ -32,6 +38,22 @@
         // send request to the server to start a game
         ws.send(JSON.stringify(payload));
       });
+
+      // JOIN buttton - event Listener - what do do when get clicked
+      btnJoin.addEventListener("click", (e) => {
+
+        if(gameId === null) {
+            gameId = txtGameId.value; // for the case that the user opens a new tab
+        }
+
+        const payload = {
+          "method": "join ",
+          "clientId": clientId,
+          "gameId": gameId
+        };
+        ws.send(JSON.stringify(payload));
+      });
+
       // button --------
 
       ws.onmessage = (message) => {

@@ -34,7 +34,6 @@ wsServer.on("request", (request) => {
   connection.on("message", (message) => {
     // when a message is received, what do I do
     const result = JSON.parse(message.utf8Data);
-    console.log("Result here ----> ", result);
 
     if (result.method === "create") {
       const clientId = result.clientId;
@@ -50,8 +49,12 @@ wsServer.on("request", (request) => {
       };
 
       const con = clients[clientId].connection;
-      console.log("Send Back ---> ", JSON.stringify(payLoad));
       con.send(JSON.stringify(payLoad));
+    }
+
+    // what if we receive a message to join?
+    if (result.method === "join") {
+        
     }
   });
   // generate a new clientID

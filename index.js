@@ -16,6 +16,7 @@ httpServer.listen(9090, () => {
 });
 
 const clients = {};
+const games = {};
 
 const websocketServer = require("websocket").server;
 const wsServer = new websocketServer({
@@ -33,7 +34,25 @@ wsServer.on("request", (request) => {
   connection.on("message", (message) => {
     // when a message is received, what do I do
     const result = JSON.parse(message.utf8Data);
-    console.log(result);
+    console.log("Result here ----> ", result);
+
+    if (result.method === "create") {
+      const clientId = result.clientId;
+      const gameId = createGuid();
+      games[gameId] = {
+        id: gameId,
+        balls: 20,
+      };
+
+      const payLoad = {
+        method: "create",
+        game: games[gameId],
+      };
+
+      const con = clients[clientId].connection;
+      console.log("Send Back ---> ", JSON.stringify(payLoad));
+      con.send(JSON.stringify(payLoad));
+    }
   });
   // generate a new clientID
   const clientId = createGuid();

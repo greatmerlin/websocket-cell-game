@@ -1,37 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Le Document</title>
-</head>
-<body>
+  </head>
+  <body>
     <h1>Hello, merlin</h1>
     <button id="btnCreate">New Game</button>
     <script>
+      let clientId = null;
+      // client makes a request to the websocket 9090 (hhtp server)
+      //note: our hhtpserver is hosted inside our express site with port 9091
+      let ws = new WebSocket("ws://localhost:9090");
 
-        // button --------
-
-        const btnCreate = document.getElementById("btnCreate");
-
-        // button --------
-
-        let clientId = null;
-        // client makes a request to the websocket 9090 (hhtp server)
-        //note: our hhtpserver is hosted inside our express site with port 9091
-        let ws = new WebSocket("ws://localhost:9090");
-        ws.onmessage = (message) => {
-            // response from the server
-            const response = JSON.parse(message.data);
-            console.log(response);
-            // connect method
-            if(response.method === "connect"){
-                clientId = response.clientId;
-                console.log("client ID -> ", clientId);
-
-            }
+      // button --------
+      const btnCreate = document.getElementById("btnCreate");
+      // wiring the events
+      // if sm1 clicks on me, what do I do -> send a request
+      btnCreate.addEventListener("click", (e) => {
+        // we need a payload and then send it to the server
+        const payload = {
+          method: "create",
+          clientId: clientId,
         };
+        console.log(
+          "***Client presses button & sends payload: ---> ",
+          JSON.stringify(payload)
+        );
+        // send request to the server to start a game
+        ws.send(JSON.stringify(payload));
+      });
+      // button --------
+
+      ws.onmessage = (message) => {
+        // response from the server
+        const response = JSON.parse(message.data);
+        console.log("-------Server says: ", response);
+        // connect method
+        if (response.method === "connect") {
+          clientId = response.clientId;
+          console.log("client ID -> ", clientId);
+        }
+
+        // create method
+        if (response.method === "create") {
+          gameId = response.game.id;
+          console.log(
+            `Welcome aboard player ${clientId} The game id is ${gameId} and the number of balls is ${response.game.balls}`
+          );
+        }
+      };
     </script>
-</body>
+  </body>
 </html>

@@ -38,23 +38,52 @@ wsServer.on("request", (request) => {
     if (result.method === "create") {
       const clientId = result.clientId;
       const gameId = createGuid();
+      // here we create the game object
       games[gameId] = {
         id: gameId,
         balls: 20,
+        clients: []
       };
 
       const payLoad = {
-        method: "create",
-        game: games[gameId],
+        "method": "create",
+        "game": games[gameId],
       };
 
       const con = clients[clientId].connection;
       con.send(JSON.stringify(payLoad));
     }
 
-    // what if we receive a message to join?
+    // what if we receive a message to join? -------------------- JOIN
     if (result.method === "join") {
-        
+
+      const clientId = result.clientId;
+      const gameId = result.gameId;  
+      // how do I get the game object
+      const game = games[gameId];
+      // now I need the connection and assign a color for this client 
+      // I need to know how many clients have joined, so at the payload from create -> empty array clients []
+      if(game.clients.length >= 3) {
+          // sorry, max players reched
+          return;
+      }
+      // substring solution, when 0 red, when 1 green, when 2 blue
+      const color = {"0": "Red", "1": "Green", "2": "Blue"}[game.clients.length];
+      // update the game state now
+      game.clients.push({
+            "clientId": clientId,
+            "color": color
+      });
+
+      const payLoad = {
+        "method": "join",
+        "game": game
+      };
+
+      // now loop through the clients and give them a color
+      game.clients.forEach((client) => {
+            clients[client.clientId].connection.send(JSON.stringify(payLoad))
+      });
     }
   });
   // generate a new clientID
@@ -66,8 +95,8 @@ wsServer.on("request", (request) => {
 
   // the payLoad of the connect
   const payLoad = {
-    method: "connect",
-    clientId: clientId,
+    "method": "connect",
+    "clientId": clientId,
   };
   connection.send(JSON.stringify(payLoad));
 });

@@ -10,7 +10,8 @@
     <h1>Hello, merlin</h1>
     <button id="btnCreate">New Game</button>
     <button id="btnJoin">Join Game</button>
-    <input type='text' id="txtGameId">
+    <input type="text" id="txtGameId" />
+    <div id="divPlayers"></div>
     <script>
       let clientId = null;
       let gameId = null;
@@ -22,14 +23,15 @@
       const btnCreate = document.getElementById("btnCreate");
       const btnJoin = document.getElementById("btnJoin");
       const txtGameId = document.getElementById("txtGameId");
+      const divPlayers = document.getElementById("divPlayers");
 
       // wiring the events ----------------------------------------
       // if sm1 clicks on me, what do I do -> send a request
       btnCreate.addEventListener("click", (e) => {
         // we need a payload and then send it to the server
         const payload = {
-          "method": "create",
-          "clientId": clientId,
+          method: "create",
+          clientId: clientId,
         };
         console.log(
           "***Client presses button & sends payload: ---> ",
@@ -41,16 +43,16 @@
 
       // JOIN buttton - event Listener - what do do when get clicked
       btnJoin.addEventListener("click", (e) => {
-
-        if(gameId === null) {
-            gameId = txtGameId.value; // for the case that the user opens a new tab
+        if (gameId === null) {
+          gameId = txtGameId.value; // for the case that the user opens a new tab
         }
 
         const payload = {
-          "method": "join ",
-          "clientId": clientId,
-          "gameId": gameId
+          method: "join",
+          clientId: clientId,
+          gameId: gameId,
         };
+        console.log("---- Client says: I am sending you the JOIN request", payload);
         ws.send(JSON.stringify(payload));
       });
 
@@ -70,8 +72,32 @@
         if (response.method === "create") {
           gameId = response.game.id;
           console.log(
-            `Welcome aboard player ${clientId} The game id is ${gameId} and the number of balls is ${response.game.balls}`
+            `----- Client: I received the game id ${gameId} and the number of balls is ${response.game.balls}`
           );
+        }
+
+        // join method
+        if (response.method === "join") {
+
+          const game = response.game;
+
+          while (divPlayers.firstChild) {
+              // clear all the children
+              divPlayers.removeChild(divPlayers.firstChild);
+            }
+
+          // when I have the game (see line const game = response.game), I can loop through the clients of the game
+          game.clients.forEach((client) => {
+            
+            // once you clear them, start building
+            const div = document.createElement("div");
+            div.style.width = "200px";
+            div.style.backgroundColor = client.color;
+            div.textContent = client.clientId;
+            divPlayers.appendChild(div);
+          });
+
+          console.log(`Welcome aboard player ${response.game.color}`);
         }
       };
     </script>

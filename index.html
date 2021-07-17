@@ -114,7 +114,7 @@
           for (let i = 0; i < game.balls; i++) {
             const buttonBall = document.createElement("button");
             // we create an id for each button so that we can select it
-            buttonBall.id = "ball" + i;
+            buttonBall.id = "ball" + (i + 1);
             buttonBall.tag = i + 1;
             buttonBall.textContent = i + 1;
             buttonBall.style.width = "150px";
@@ -126,11 +126,27 @@
                 clientId: clientId,
                 gameId: gameId,
                 ballId: buttonBall.tag,
+                color: playerColor
               };
               ws.send(JSON.stringify(payLoad));
             });
             divBoard.appendChild(buttonBall);
           }
+        }
+
+        if (response.method === "update") {
+            // if this is null
+            if(!response.game.state) {
+                return;
+            }
+            // { 1: "red", 1 }
+            for(const ball of Object.keys(response.game.state)){
+                const color = response.game.state[ball];
+                const ballObject = document.getElementById("ball" + ballId);
+                ballObject.style.backgroundColor = color;
+
+            }
+
         }
       };
     </script>

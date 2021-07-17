@@ -43,12 +43,12 @@ wsServer.on("request", (request) => {
       games[gameId] = {
         id: gameId,
         balls: 20,
-        clients: []
+        clients: [],
       };
 
       const payLoad = {
-        "method": "create",
-        "game": games[gameId],
+        method: "create",
+        game: games[gameId],
       };
 
       const con = clients[clientId].connection;
@@ -57,40 +57,65 @@ wsServer.on("request", (request) => {
 
     // what if we receive a message to join? -------------------- JOIN
     if (result.method === "join") {
-
       const clientId = result.clientId;
-      const gameId = result.gameId;  
+      const gameId = result.gameId;
       // how do I get the game object
       const game = games[gameId];
-      // now I need the connection and assign a color for this client 
+      // now I need the connection and assign a color for this client
       // I need to know how many clients have joined, so at the payload from create -> empty array clients []
-      if(game.clients.length >= 3) {
-          // sorry, max players reched
-          return;
+      if (game.clients.length >= 3) {
+        // sorry, max players reched
+        return;
       }
       // substring solution, when 0 red, when 1 green, when 2 blue
-      const color = {"0": "Red", "1": "Green", "2": "Blue"}[game.clients.length];
+      const color = { 0: "Red", 1: "Green", 2: "Blue" }[game.clients.length];
       // update the game state now
       game.clients.push({
-            "clientId": clientId,
-            "color": color
+        clientId: clientId,
+        color: color,
       });
 
+      // when to start sending the STATE to ALL clients (final step) --- START the game when we have > 1 players
+      if (game.clients.length > 1) {
+        updateGameState();
+      }
+
       const payLoad = {
-        "method": "join",
-        "game": game
+        method: "join",
+        game: game,
       };
 
       // now loop through the clients and give them a color
       game.clients.forEach((client) => {
-            clients[client.clientId].connection.send(JSON.stringify(payLoad))
+        clients[client.clientId].connection.send(JSON.stringify(payLoad));
       });
     }
 
     // what if we receive a message to play? -------------------- PLAY
-    if (result.method === "play") {}
+    if (result.method === "play") {
+      // we take the following from the received payload
+      let clientId = result.clientId;
+      let gameId = result.gameId;
+      let ballId = result.ballId;
+      let color = result.color;
 
+      //now build the state which will be global on the server (update all clients)
+      let state = games[gameId].state;
+      // if the state is not set, set it
+      if (!state) {
+        state = {};
+      }
+      state[ballId] = color;
+      games[gameId].state = state;
 
+      const game = games[gameId];
+
+      // what do we want to send to the client (we just update the state)
+      const payLoad = {
+        method: "play",
+        game: game,
+      };
+    }
   });
   // generate a new clientID
   const clientId = createGuid();
@@ -101,11 +126,29 @@ wsServer.on("request", (request) => {
 
   // the payLoad of the connect
   const payLoad = {
-    "method": "connect",
-    "clientId": clientId,
+    method: "connect",
+    clientId: clientId,
   };
   connection.send(JSON.stringify(payLoad));
 });
+
+function updateGameState() {
+  for (const game of Object.keys(games)) {
+    const game = games[game];
+
+    const payLoad = {
+      method: "update",
+      game: game,
+    };
+
+    game.clients.forEach((client) => {
+      clients[client.clientId].connection.send(JSON.stringify(payLoad));
+    });
+  }
+
+  //call this every 500ms
+  setTimeout(updateGameState, 500);
+}
 
 function createGuid() {
   function S4() {

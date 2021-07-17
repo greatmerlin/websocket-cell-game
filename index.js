@@ -35,6 +35,7 @@ wsServer.on("request", (request) => {
     // when a message is received, what do I do
     const result = JSON.parse(message.utf8Data);
 
+    // what if we receive a message to create a game? -------------------- CREATE
     if (result.method === "create") {
       const clientId = result.clientId;
       const gameId = createGuid();
@@ -85,6 +86,11 @@ wsServer.on("request", (request) => {
             clients[client.clientId].connection.send(JSON.stringify(payLoad))
       });
     }
+
+    // what if we receive a message to play? -------------------- PLAY
+    if (result.method === "play") {}
+
+
   });
   // generate a new clientID
   const clientId = createGuid();

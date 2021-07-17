@@ -14,7 +14,6 @@
     <div id="divPlayers"></div>
     <div id="divBoard"></div>
 
-
     <script>
       let clientId = null;
       let gameId = null;
@@ -29,7 +28,6 @@
       const txtGameId = document.getElementById("txtGameId");
       const divPlayers = document.getElementById("divPlayers");
       const divBoard = document.getElementById("divBoard");
-
 
       // wiring the events ----------------------------------------
       // if sm1 clicks on me, what do I do -> send a request
@@ -58,7 +56,10 @@
           clientId: clientId,
           gameId: gameId,
         };
-        console.log("---- Client says: I am sending you the JOIN request", payload);
+        console.log(
+          "---- Client says: I am sending you the JOIN request",
+          payload
+        );
         ws.send(JSON.stringify(payload));
       });
 
@@ -84,17 +85,15 @@
 
         // join method
         if (response.method === "join") {
-
           const game = response.game;
 
           while (divPlayers.firstChild) {
-              // clear all the children
-              divPlayers.removeChild(divPlayers.firstChild);
-            }
+            // clear all the children
+            divPlayers.removeChild(divPlayers.firstChild);
+          }
 
           // when I have the game (see line const game = response.game), I can loop through the clients of the game
           game.clients.forEach((client) => {
-            
             // once you clear them, start building the Board
             const div = document.createElement("div");
             div.style.width = "200px";
@@ -102,31 +101,36 @@
             div.textContent = client.clientId;
             divPlayers.appendChild(div);
 
-            if(client.clientId === clientId) {
-                playerColor = client.color;
+            if (client.clientId === clientId) {
+              playerColor = client.color;
             }
           });
 
           // now for DIV BOARD
           while (divBoard.firstChild) {
-              // clear all the children
-              divBoard.removeChild(divBoard.firstChild);
-            }
-            for(let i = 0; i < game.balls; i ++) {
-
-                const buttonBall = document.createElement("button");
-                // we create an id for each button so that we can select it
-                buttonBall.id = "ball" + i;
-                buttonBall.tag = i + 1;
-                buttonBall.textContent = i + 1;
-                buttonBall.style.width = "150px";
-                buttonBall.style.height = "150px";
-                buttonBall.addEventListener("click", (e) => {
-                    buttonBall.style.backgroundColor = playerColor;
-                });
-                divBoard.appendChild(buttonBall);
-            }
-
+            // clear all the children
+            divBoard.removeChild(divBoard.firstChild);
+          }
+          for (let i = 0; i < game.balls; i++) {
+            const buttonBall = document.createElement("button");
+            // we create an id for each button so that we can select it
+            buttonBall.id = "ball" + i;
+            buttonBall.tag = i + 1;
+            buttonBall.textContent = i + 1;
+            buttonBall.style.width = "150px";
+            buttonBall.style.height = "150px";
+            buttonBall.addEventListener("click", (e) => {
+              buttonBall.style.backgroundColor = playerColor;
+              const payLoad = {
+                method: "play",
+                clientId: clientId,
+                gameId: gameId,
+                ballId: buttonBall.tag,
+              };
+              ws.send(JSON.stringify(payLoad));
+            });
+            divBoard.appendChild(buttonBall);
+          }
         }
       };
     </script>

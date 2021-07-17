@@ -1,5 +1,4 @@
 const http = require("http");
-
 const app = require("express")();
 app.get("/", (request, response) => {
   response.sendFile(__dirname + "/index.html");
@@ -9,19 +8,22 @@ app.listen(9091, () => {
   console.log("listening to 9091...");
 });
 
+const websocketServer = require("websocket").server;
 const httpServer = http.createServer();
 
 httpServer.listen(9090, () => {
   console.log("listening to Port 9090...");
 });
 
+// hashmap clients
 const clients = {};
 const games = {};
 
-const websocketServer = require("websocket").server;
+
 const wsServer = new websocketServer({
   httpServer: httpServer,
 });
+
 wsServer.on("request", (request) => {
   //sm1 trying to connect
   const connection = request.accept(null, request.origin);
@@ -76,7 +78,7 @@ wsServer.on("request", (request) => {
       });
 
       // when to start sending the STATE to ALL clients (final step) --- START the game when we have > 1 players
-      if (game.clients.length > 1) {
+      if (game.clients.length === 3) {
         updateGameState();
       }
 
@@ -94,10 +96,9 @@ wsServer.on("request", (request) => {
     // what if we receive a message to play? -------------------- PLAY
     if (result.method === "play") {
       // we take the following from the received payload
-      let clientId = result.clientId;
-      let gameId = result.gameId;
-      let ballId = result.ballId;
-      let color = result.color;
+      const gameId = result.gameId;
+      const ballId = result.ballId;
+      const color = result.color;
 
       //now build the state which will be global on the server (update all clients)
       let state = games[gameId].state;
@@ -107,14 +108,6 @@ wsServer.on("request", (request) => {
       }
       state[ballId] = color;
       games[gameId].state = state;
-
-      const game = games[gameId];
-
-      // what do we want to send to the client (we just update the state)
-      const payLoad = {
-        method: "play",
-        game: game,
-      };
     }
   });
   // generate a new clientID
@@ -133,8 +126,8 @@ wsServer.on("request", (request) => {
 });
 
 function updateGameState() {
-  for (const game of Object.keys(games)) {
-    const game = games[game];
+  for (const eachGame of Object.keys(games)) {
+    const game = games[eachGame];
 
     const payLoad = {
       method: "update",

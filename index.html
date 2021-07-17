@@ -29,21 +29,7 @@
       const divPlayers = document.getElementById("divPlayers");
       const divBoard = document.getElementById("divBoard");
 
-      // wiring the events ----------------------------------------
-      // if sm1 clicks on me, what do I do -> send a request
-      btnCreate.addEventListener("click", (e) => {
-        // we need a payload and then send it to the server
-        const payload = {
-          method: "create",
-          clientId: clientId,
-        };
-        console.log(
-          "***Client presses button & sends payload: ---> ",
-          JSON.stringify(payload)
-        );
-        // send request to the server to start a game
-        ws.send(JSON.stringify(payload));
-      });
+      // wiring the events ----------------------------------------  WIRE
 
       // JOIN buttton - event Listener - what do do when get clicked
       btnJoin.addEventListener("click", (e) => {
@@ -56,10 +42,25 @@
           clientId: clientId,
           gameId: gameId,
         };
-        console.log(
+/*         console.log(
           "---- Client says: I am sending you the JOIN request",
           payload
-        );
+        ); */
+        ws.send(JSON.stringify(payload));
+      });
+
+      // if sm1 clicks on me, what do I do -> send a request
+      btnCreate.addEventListener("click", (e) => {
+        // we need a payload and then send it to the server
+        const payload = {
+          method: "create",
+          clientId: clientId,
+        };
+/*         console.log(
+          "***Client presses button & sends payload: ---> ",
+          JSON.stringify(payload)
+        ); */
+        // send request to the server to start a game
         ws.send(JSON.stringify(payload));
       });
 
@@ -68,7 +69,7 @@
       ws.onmessage = (message) => {
         // response from the server
         const response = JSON.parse(message.data);
-        console.log("-------Server says: ", response);
+        //console.log("-------Server says: ", response);
         // connect method
         if (response.method === "connect") {
           clientId = response.clientId;
@@ -81,6 +82,20 @@
           console.log(
             `----- Client: I received the game id ${gameId} and the number of balls is ${response.game.balls}`
           );
+        }
+
+        // update method
+        if (response.method === "update") {
+          // if this is null
+          if (!response.game.state) {
+            return;
+          }
+          // { 1: "red", 1 }
+          for (const ball of Object.keys(response.game.state)) {
+            const color = response.game.state[ball];
+            const ballObject = document.getElementById("ball" + ball);
+            ballObject.style.backgroundColor = color;
+          }
         }
 
         // join method
@@ -126,27 +141,12 @@
                 clientId: clientId,
                 gameId: gameId,
                 ballId: buttonBall.tag,
-                color: playerColor
+                color: playerColor,
               };
               ws.send(JSON.stringify(payLoad));
             });
             divBoard.appendChild(buttonBall);
           }
-        }
-
-        if (response.method === "update") {
-            // if this is null
-            if(!response.game.state) {
-                return;
-            }
-            // { 1: "red", 1 }
-            for(const ball of Object.keys(response.game.state)){
-                const color = response.game.state[ball];
-                const ballObject = document.getElementById("ball" + ballId);
-                ballObject.style.backgroundColor = color;
-
-            }
-
         }
       };
     </script>

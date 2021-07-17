@@ -12,9 +12,13 @@
     <button id="btnJoin">Join Game</button>
     <input type="text" id="txtGameId" />
     <div id="divPlayers"></div>
+    <div id="divBoard"></div>
+
+
     <script>
       let clientId = null;
       let gameId = null;
+      let playerColor = null;
       // client makes a request to the websocket 9090 (hhtp server)
       //note: our hhtpserver is hosted inside our express site with port 9091
       let ws = new WebSocket("ws://localhost:9090");
@@ -24,6 +28,8 @@
       const btnJoin = document.getElementById("btnJoin");
       const txtGameId = document.getElementById("txtGameId");
       const divPlayers = document.getElementById("divPlayers");
+      const divBoard = document.getElementById("divBoard");
+
 
       // wiring the events ----------------------------------------
       // if sm1 clicks on me, what do I do -> send a request
@@ -95,9 +101,32 @@
             div.style.backgroundColor = client.color;
             div.textContent = client.clientId;
             divPlayers.appendChild(div);
+
+            if(client.clientId === clientId) {
+                playerColor = client.color;
+            }
           });
 
-          console.log(`Welcome aboard player ${response.game.color}`);
+          // now for DIV BOARD
+          while (divBoard.firstChild) {
+              // clear all the children
+              divBoard.removeChild(divBoard.firstChild);
+            }
+            for(let i = 0; i < game.balls; i ++) {
+
+                const buttonBall = document.createElement("button");
+                // we create an id for each button so that we can select it
+                buttonBall.id = "ball" + i;
+                buttonBall.tag = i + 1;
+                buttonBall.textContent = i + 1;
+                buttonBall.style.width = "150px";
+                buttonBall.style.height = "150px";
+                buttonBall.addEventListener("click", (e) => {
+                    buttonBall.style.backgroundColor = playerColor;
+                });
+                divBoard.appendChild(buttonBall);
+            }
+
         }
       };
     </script>
